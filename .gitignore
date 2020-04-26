@@ -1,0 +1,8 @@
+.vscode
+.idea
+__pychache__
+*.pyc
+*.log
+config.ini
+venv
+env
