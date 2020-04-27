@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', help='user password')
     parser.add_argument('-n', '--new-password', help='user new password')
     parser.add_argument('-m', '--email', help='user email')
+    parser.add_argument('-s', '--send', help='user email')
     args = parser.parse_args() # parse all arguments
 
     connection = connect_to_db()
@@ -56,12 +57,24 @@ if __name__ == '__main__':
             print(user)
 
     if args.delete == True:
-        user = UserService.find_by_username(cursor, args.username)
+        user = UserService.find_by_username(cursor, args.username) # można uzupełnic o warunek z logowanie użytkownika
         if user is not None:
-            user.delete(cursor)
-            print('User deleted')
+            is_user_logged = UserService.login(cursor, args.username, args.password)
+            if is_user_logged == True:
+                user.delete(cursor)
+                print('User deleted')
+            else:
+                print('Username or password invalid')
 
     if args.edit == True:
+        is_user_logged = UserService.login(cursor, args.username, args.password)
+
+        if is_user_logged == True:
+            user.set_password(args.password, 'testowa-sol')
+            user.update(cursor)
+            print("Password updated")
+        else:
+            print('Username or password invalid')
         # Check is username and password authorize user
         # UserService.login(cursor, args.username, args.password)
         # If user logged then set new password from args.new_password
