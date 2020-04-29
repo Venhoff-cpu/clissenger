@@ -41,6 +41,21 @@ class UserService:
             return None
 
     @staticmethod
+    def find_by_email(cursor, email):
+        sql = "SELECT id, username, email, hashed_password FROM users WHERE email=%s"
+        cursor.execute(sql, (email,))
+        data = cursor.fetchone()
+        if data:
+            loaded_user = User()
+            loaded_user._id = data[0]
+            loaded_user.username = data[1]
+            loaded_user.email = data[2]
+            loaded_user._hashed_password = data[3]
+            return loaded_user
+        else:
+            return None
+
+    @staticmethod
     def get_all(cursor):
         sql = "SELECT id, username, email, hashed_password FROM users"
         ret = []

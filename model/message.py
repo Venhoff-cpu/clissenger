@@ -14,8 +14,8 @@ class Message(Entity):
 
     def __init__(self):
         self._id = -1
-        self.from_user = User().id
-        self.to_user = User().id
+        self.from_user = User()
+        self.to_user = User()
         self.context = ''
         self.created_at = datetime.now()
 
@@ -27,9 +27,9 @@ class Message(Entity):
         if not self._id == -1:
             return False
 
-        sql = """INSERT INTO messages(from_user, to_user, context)
-                VALUES(%s, %s, %s) RETURNING id"""
-        values = (self.from_user, self.to_user, self.context)
+        sql = """INSERT INTO messages(from_user, to_user, context, created_at)
+                VALUES(%s, %s, %s, %s) RETURNING id"""
+        values = (self.from_user, self.to_user, self.context, self.created_at)
         cursor.execute(sql, values)
         self._id = cursor.fetchone()[0]
         return True
@@ -53,4 +53,4 @@ class Message(Entity):
         return True
 
     def __str__(self):
-        return f"From: {self.from_user.username}, To: {self.to_user.username}, message: {self.context}"
+        return f"From: {self.from_user}, To: {self.to_user}, message: {self.context}, on: {self.created_at}"

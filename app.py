@@ -1,8 +1,11 @@
 import argparse
 
 from model.user import User
+from model.message import Message
 from service.user_service import UserService
+from service.message_service import MessageService
 from utils.db import connect_to_db
+from datetime import datetime
 
 
 if __name__ == '__main__':
@@ -16,8 +19,13 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--username', help='user username')
     parser.add_argument('-p', '--password', help='user password')
     parser.add_argument('-n', '--new-password', help='user new password')
-    parser.add_argument('-m', '--email', help='user email')
-    parser.add_argument('-s', '--send', help='user email')
+    parser.add_argument('-em', '--email', help='user email')
+    parser.add_argument('-s', '--send', help='send message', action='store_true')
+    parser.add_argument('-m', '--message', help='user message')
+    parser.add_argument('-lm', '--list-msg', help='list all messages', action='store_true')
+    parser.add_argument('-to', '--to-user', help='list all messages by recipient', action='store_true')
+    parser.add_argument('-fr', '--from-user', help='list all messages by sender', action='store_true')
+    parser.add_argument('-mi', '--msg-id', help='Find msg by id', action='store_true')
     args = parser.parse_args() # parse all arguments
 
     connection = connect_to_db()
@@ -56,6 +64,30 @@ if __name__ == '__main__':
         for user in users:
             print(user)
 
+    if args.list_msg == True:
+        print("list of all messages:")
+        msgs = MessageService.load_all_msg(cursor)
+        for msg in msgs:
+            print(msg)
+
+    if args.from_user == True:
+        print(f"Messages send from {args.from_user}")
+        msgs = MessageService.load_all_messages_by_user(cursor, args.from_user)
+        for msg in msgs:
+            print(msg)
+
+    if args.to_user == True:
+        print(f"Messages send to {args.to_user}")
+        msgs = MessageService.find_by_recipient(cursor, args.to_user)
+        for msg in msgs:
+            print(msg)
+
+    if args.msg_id == True:
+        print(f"Messages Id {args.msg_id}")
+        msgs = MessageService.load_msg_by_id(cursor, args.msg_id)
+        for msg in msgs:
+            print(msg)
+
     if args.delete == True:
         user = UserService.find_by_username(cursor, args.username) # można uzupełnic o warunek z logowanie użytkownika
         if user is not None:
@@ -68,18 +100,41 @@ if __name__ == '__main__':
 
     if args.edit == True:
         is_user_logged = UserService.login(cursor, args.username, args.password)
-
+        # Check if username and password authorize user
         if is_user_logged == True:
-            user.set_password(args.password, 'testowa-sol')
+            # If user logged then set new password from args.new_password
+            user.set_password(args.new_password, 'testowa-sol')
+            # user.update(cursor)
             user.update(cursor)
             print("Password updated")
         else:
             print('Username or password invalid')
-        # Check is username and password authorize user
-        # UserService.login(cursor, args.username, args.password)
-        # If user logged then set new password from args.new_password
-        # user.update(cursor)
-        pass
+
+    if args.send == True:
+        user = UserService.find_by_username(cursor, args.username)
+        if user is not None:
+            is_user_logged = UserService.login(cursor, args.username, args.password)
+            if is_user_logged == True:
+                to_user = UserService.find_by_email(cursor, args.email)
+                if to_user is not None:
+                    context = args.message
+                    if context:
+                        msg = Message()
+                        msg.from_user = user.id
+                        msg.to_user = to_user.id
+                        msg.context = args.message
+                        msg.created_at = datetime.now()
+                        msg.save(cursor)
+                        print("Message send")
+                    else:
+                        print("No message provided")
+                else:
+                    print("No user with that email")
+
+            else:
+                print('Username or password invalid')
+        else:
+            print('Username or password invalid')
 
     cursor.close()
     connection.close()
