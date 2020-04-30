@@ -14,14 +14,16 @@ class MessageService:
 
     @staticmethod
     def load_all_msg(cursor):
-        sql = "SELECT id, from_user, to_user, context, created_at FROM messages"
+        sql = "SELECT * FROM messages"
         ret = []
         cursor.execute(sql)
         for row in cursor.fetchall():
             loaded_msg = Message()
             loaded_msg._id = row[0]
-            loaded_msg.from_user = row[1]
-            loaded_msg.to_user = row[2]
+            from_user_temp = UserService.find_by_id(cursor, row[1])
+            loaded_msg.from_user = from_user_temp.username
+            to_user_temp = UserService.find_by_id(cursor, row[2])
+            loaded_msg.to_user = to_user_temp.username
             loaded_msg.context = row[3]
             loaded_msg.created_at = row[4]
             ret.append(loaded_msg)
@@ -38,12 +40,16 @@ class MessageService:
             for row in data:
                 loaded_msg = Message()
                 loaded_msg._id = row[0]
-                loaded_msg.from_user = row[1]
-                loaded_msg.to_user = row[2]
+                from_user_temp = UserService.find_by_id(cursor, row[1])
+                loaded_msg.from_user = from_user_temp.username
+                to_user_temp = UserService.find_by_id(cursor, row[2])
+                loaded_msg.to_user = to_user_temp.username
                 loaded_msg.context = row[3]
                 loaded_msg.created_at = row[4]
                 ret.append(loaded_msg)
             return ret
+        else:
+            return None
 
     # - find_by_id(cursor, message_id)
     @staticmethod
@@ -56,8 +62,10 @@ class MessageService:
             for row in data:
                 loaded_msg = Message()
                 loaded_msg._id = row[0]
-                loaded_msg.from_user = row[1]
-                loaded_msg.to_user = row[2]
+                from_user_temp = UserService.find_by_id(cursor, row[1])
+                loaded_msg.from_user = from_user_temp.username
+                to_user_temp = UserService.find_by_id(cursor, row[2])
+                loaded_msg.to_user = to_user_temp.username
                 loaded_msg.context = row[3]
                 loaded_msg.created_at = row[4]
                 ret.append(loaded_msg)
@@ -67,7 +75,7 @@ class MessageService:
 
     # - find_by_recipient(cursor, recipient_username)
     @staticmethod
-    def find_by_recipient(cursor, username, recipient_username):
+    def find_by_recipient(cursor, recipient_username):
         sql = "SELECT id, from_user, to_user, context, created_at FROM messages WHERE to_user=%s"
         ret = []
         cursor.execute(sql, (recipient_username,))
@@ -76,8 +84,10 @@ class MessageService:
             for row in data:
                 loaded_msg = Message()
                 loaded_msg._id = row[0]
-                loaded_msg.from_user = row[1]
-                loaded_msg.to_user = row[2]
+                from_user_temp = UserService.find_by_id(cursor, row[1])
+                loaded_msg.from_user = from_user_temp.username
+                to_user_temp = UserService.find_by_id(cursor, row[2])
+                loaded_msg.to_user = to_user_temp.username
                 loaded_msg.context = row[3]
                 loaded_msg.created_at = row[4]
                 ret.append(loaded_msg)

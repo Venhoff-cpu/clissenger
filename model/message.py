@@ -2,8 +2,6 @@ from model.entity import Entity
 from model.user import User
 from datetime import datetime
 
-# TODO: Same as user entity with methods: save, update and delete
-
 
 class Message(Entity):
     _id = None
